@@ -1,7 +1,6 @@
 package main
 
 import (
-	"bufio"
 	"io/ioutil"
 	"log"
 	"os"
@@ -21,49 +20,8 @@ func containsFile(arr []os.FileInfo, str string) bool {
 	}
 	return false
 }
-func containsString(arr []string, str string) bool {
-	for _, a := range arr {
-		if a == str {
-			return true
-		}
-	}
-	return false
-}
-
-func readLines(file *os.File) ([]string, error) {
-	var lines []string
-	scanner := bufio.NewScanner(file)
-	for scanner.Scan() {
-		lines = append(lines, scanner.Text())
-	}
-	return lines, scanner.Err()
-}
-
-func deleteEmpty(s []string) []string {
-	var r []string
-	for _, str := range s {
-		if str != "" {
-			r = append(r, str)
-		}
-	}
-	return r
-}
 
 func main() {
-	stateFilePath := path.Join(baseFolder, "mkv2mp4.state")
-	stateFile, err := os.OpenFile(stateFilePath, os.O_APPEND|os.O_WRONLY|os.O_CREATE, 0644)
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	defer stateFile.Close()
-
-	content, err := ioutil.ReadFile(stateFilePath)
-	if err != nil {
-		log.Fatal(err)
-	}
-	completedFiles := deleteEmpty(strings.Split(string(content), "\n"))
-
 	files, err := ioutil.ReadDir(baseFolder)
 	if err != nil {
 		log.Fatal(err)
@@ -74,23 +32,25 @@ func main() {
 			continue
 		}
 
+		partialFile := strings.ReplaceAll(file.Name(), ".mkv", ".mp4.part")
 		finalFile := strings.ReplaceAll(file.Name(), ".mkv", ".mp4")
 
-		if containsFile(files, finalFile) && containsString(completedFiles, finalFile) {
+		input := path.Join(baseFolder, file.Name())
+		partial := path.Join(baseFolder, partialFile)
+		final := path.Join(baseFolder, finalFile)
+
+		if containsFile(files, finalFile) {
 			continue
 		}
 
-		input := path.Join(baseFolder, file.Name())
-		output := path.Join(baseFolder, finalFile)
-
-		if containsFile(files, finalFile) {
-			err := os.Remove(output)
+		if containsFile(files, partialFile) {
+			err := os.Remove(partial)
 			if err != nil {
 				log.Fatal(err)
 			}
 		}
 
-		cmd := exec.Command("ffmpeg", "-i", input, "-vcodec", "h264", "-acodec", "mp3", output)
+		cmd := exec.Command("ffmpeg", "-i", input, "-vcodec", "h264", "-acodec", "mp3", partial)
 		cmd.Stdout = os.Stdout
 		cmd.Stderr = os.Stderr
 		err = cmd.Start()
@@ -103,7 +63,8 @@ func main() {
 			log.Fatal(err)
 		}
 
-		if _, err = stateFile.WriteString(finalFile + "\n"); err != nil {
+		err = os.Rename(partial, final)
+		if err != nil {
 			log.Fatal(err)
 		}
 	}
