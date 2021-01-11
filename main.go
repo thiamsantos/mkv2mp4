@@ -32,7 +32,7 @@ func main() {
 			continue
 		}
 
-		partialFile := strings.ReplaceAll(file.Name(), ".mkv", ".mp4.part")
+		partialFile := strings.ReplaceAll(file.Name(), ".mkv", ".part.mp4")
 		finalFile := strings.ReplaceAll(file.Name(), ".mkv", ".mp4")
 
 		input := path.Join(baseFolder, file.Name())
