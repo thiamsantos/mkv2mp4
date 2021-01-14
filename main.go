@@ -22,6 +22,11 @@ func containsFile(arr []os.FileInfo, str string) bool {
 }
 
 func main() {
+	err := os.Mkdir(path.Join(baseFolder, "original"), 0755)
+	if err != nil {
+		log.Fatal(err)
+	}
+
 	files, err := ioutil.ReadDir(baseFolder)
 	if err != nil {
 		log.Fatal(err)
@@ -38,8 +43,14 @@ func main() {
 		input := path.Join(baseFolder, file.Name())
 		partial := path.Join(baseFolder, partialFile)
 		final := path.Join(baseFolder, finalFile)
+		original := path.Join(baseFolder, "original", file.Name())
 
 		if containsFile(files, finalFile) {
+			err = os.Rename(input, original)
+			if err != nil {
+				log.Fatal(err)
+			}
+
 			continue
 		}
 
@@ -64,6 +75,11 @@ func main() {
 		}
 
 		err = os.Rename(partial, final)
+		if err != nil {
+			log.Fatal(err)
+		}
+
+		err = os.Rename(input, original)
 		if err != nil {
 			log.Fatal(err)
 		}
