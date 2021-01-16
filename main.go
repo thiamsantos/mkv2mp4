@@ -22,7 +22,7 @@ func containsFile(arr []os.FileInfo, str string) bool {
 }
 
 func main() {
-	err := os.Mkdir(path.Join(baseFolder, "original"), 0755)
+	err := os.MkdirAll(path.Join(baseFolder, "original"), 0755)
 	if err != nil {
 		log.Fatal(err)
 	}
