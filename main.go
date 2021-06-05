@@ -61,7 +61,7 @@ func main() {
 			}
 		}
 
-		cmd := exec.Command("ffmpeg", "-i", input, "-vcodec", "h264", "-acodec", "mp3", partial)
+		cmd := exec.Command("ffmpeg", "-i", input, "-vcodec", "h264", "-acodec", "ac3", partial)
 		cmd.Stdout = os.Stdout
 		cmd.Stderr = os.Stderr
 		err = cmd.Start()
